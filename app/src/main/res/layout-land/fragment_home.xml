@@ -41,17 +41,36 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="sans-serif-light"
-            android:format12Hour="h:mm"
+            android:format12Hour="h:mm a"
+            android:includeFontPadding="false"
             android:textSize="@dimen/time_size"
             tools:text="02:34" />
+
+        <TextClock
+            android:id="@+id/clock2"
+            style="@style/TextDefault"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:drawableEnd="@drawable/ic_flag_aus"
+            android:drawablePadding="8dp"
+            android:drawableTint="?attr/primaryColor"
+            android:fontFamily="sans-serif-light"
+            android:format12Hour="h:mm a"
+            android:format24Hour="HH:mm"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="3dp"
+            android:timeZone="Australia/Brisbane"
+            android:textSize="@dimen/date_size"
+            tools:text="10:34" />
 
         <TextView
             android:id="@+id/date"
             style="@style/TextDefault"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:format12Hour="EEE, dd MMM"
-            android:format24Hour="EEE, dd MMM"
+            android:layout_marginTop="6dp"
+            android:fontFamily="sans-serif-light"
             android:paddingHorizontal="3dp"
             android:textSize="@dimen/date_size"
             tools:text="Thu, 30 Dec" />

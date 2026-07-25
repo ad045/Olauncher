@@ -21,6 +21,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavController
 import androidx.navigation.findNavController
 import app.olauncher.data.Constants
+import app.olauncher.data.PersonalDefaults
 import app.olauncher.data.Prefs
 import app.olauncher.databinding.ActivityMainBinding
 import app.olauncher.helper.getColorFromAttr
@@ -36,6 +37,7 @@ import app.olauncher.helper.isTablet
 import app.olauncher.helper.openUrl
 import app.olauncher.helper.rateApp
 import app.olauncher.helper.resetLauncherViaFakeActivity
+import app.olauncher.helper.setDefaultWallpaper
 import app.olauncher.helper.setPlainWallpaper
 import app.olauncher.helper.shareApp
 import app.olauncher.helper.showLauncherSelector
@@ -100,6 +102,8 @@ class MainActivity : AppCompatActivity() {
             prefs.firstOpenTime = System.currentTimeMillis()
             viewModel.setDefaultClockApp()
             viewModel.resetLauncherLiveData.call()
+            PersonalDefaults.apply(prefs)
+            lifecycleScope.launch { setDefaultWallpaper(applicationContext) }
         }
 
         initClickListeners()

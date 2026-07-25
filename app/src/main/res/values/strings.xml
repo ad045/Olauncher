@@ -49,6 +49,8 @@
     <string name="swipe_up_for_apps">1. Swipe up for all apps\n2. Long press anywhere for settings</string>
     <string name="apps_on_home_screen">Apps on home screen</string>
     <string name="daily_wallpaper_update">Daily new wallpaper</string>
+    <string name="choose_wallpaper">Choose wallpaper from gallery</string>
+    <string name="failed_to_set_wallpaper">Failed to set wallpaper</string>
     <string name="left">Left</string>
     <string name="right">Right</string>
     <string name="center">Center</string>

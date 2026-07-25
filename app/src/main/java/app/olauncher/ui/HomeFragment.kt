@@ -8,6 +8,9 @@ import android.content.res.Configuration
 import android.os.BatteryManager
 import android.os.Build
 import android.os.Bundle
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.style.RelativeSizeSpan
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -74,8 +77,24 @@ class HomeFragment : BaseFragment(), View.OnClickListener, View.OnLongClickListe
 
         initObservers()
         setHomeAlignment(prefs.homeAlignment)
+        setClockFormats()
         initSwipeTouchListener()
         initClickListeners()
+    }
+
+    // Render the "am"/"pm" marker at date-text size (12-hour mode only);
+    // the AUS clock is already at date-text size, so its marker needs no scaling
+    private fun setClockFormats() {
+        val relativeSize = resources.getDimension(R.dimen.date_size) / resources.getDimension(R.dimen.time_size)
+        binding.clock.format12Hour = withSmallAmPm("h:mm a", relativeSize)
+    }
+
+    private fun withSmallAmPm(pattern: String, relativeSize: Float): CharSequence {
+        val spannable = SpannableString(pattern)
+        val index = pattern.indexOf(" a")
+        if (index >= 0)
+            spannable.setSpan(RelativeSizeSpan(relativeSize), index, index + 2, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+        return spannable
     }
 
     override fun onResume() {
@@ -92,6 +111,7 @@ class HomeFragment : BaseFragment(), View.OnClickListener, View.OnLongClickListe
             // Home button for recents feature disabled
             // R.id.recents -> {}
             R.id.clock -> openClockApp()
+            R.id.clock2 -> openClockApp()
             R.id.date -> openCalendarApp()
             R.id.setDefaultLauncher -> viewModel.resetLauncherLiveData.call()
             R.id.tvScreenTime -> openScreenTimeDigitalWellbeing()
@@ -228,6 +248,7 @@ class HomeFragment : BaseFragment(), View.OnClickListener, View.OnLongClickListe
         // Home button for recents feature disabled
         // binding.recents.setOnClickListener(this)
         binding.clock.setOnClickListener(this)
+        binding.clock2.setOnClickListener(this)
         binding.date.setOnClickListener(this)
         binding.clock.setOnLongClickListener(this)
         binding.date.setOnLongClickListener(this)
@@ -272,6 +293,7 @@ class HomeFragment : BaseFragment(), View.OnClickListener, View.OnLongClickListe
     private fun populateDateTime() {
         binding.dateTimeLayout.isVisible = prefs.dateTimeVisibility != Constants.DateTime.OFF
         binding.clock.isVisible = Constants.DateTime.isTimeVisible(prefs.dateTimeVisibility)
+        binding.clock2.isVisible = Constants.DateTime.isTimeVisible(prefs.dateTimeVisibility)
         binding.date.isVisible = Constants.DateTime.isDateVisible(prefs.dateTimeVisibility)
 
 //        var dateText = SimpleDateFormat("EEE, d MMM", Locale.getDefault()).format(Date())

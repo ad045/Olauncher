@@ -407,6 +407,66 @@ suspend fun setWallpaper(appContext: Context, url: String): Boolean {
     }
 }
 
+suspend fun setDefaultWallpaper(appContext: Context): Boolean {
+    return withContext(Dispatchers.IO) {
+        val originalImageBitmap = try {
+            BitmapFactory.decodeResource(appContext.resources, R.drawable.wallpaper_default)
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        } ?: return@withContext false
+
+        val wallpaperManager = WallpaperManager.getInstance(appContext)
+        val (width, height) = getScreenDimensions(appContext)
+        val scaledBitmap = getWallpaperBitmap(originalImageBitmap, width, height)
+
+        try {
+            wallpaperManager.setBitmap(scaledBitmap, null, false, WallpaperManager.FLAG_SYSTEM)
+            wallpaperManager.setBitmap(scaledBitmap, null, false, WallpaperManager.FLAG_LOCK)
+        } catch (e: Exception) {
+            return@withContext false
+        }
+
+        try {
+            originalImageBitmap.recycle()
+            scaledBitmap.recycle()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        true
+    }
+}
+
+suspend fun setWallpaperFromUri(appContext: Context, uri: Uri): Boolean {
+    return withContext(Dispatchers.IO) {
+        val originalImageBitmap = try {
+            appContext.contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it) }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        } ?: return@withContext false
+
+        val wallpaperManager = WallpaperManager.getInstance(appContext)
+        val (width, height) = getScreenDimensions(appContext)
+        val scaledBitmap = getWallpaperBitmap(originalImageBitmap, width, height)
+
+        try {
+            wallpaperManager.setBitmap(scaledBitmap, null, false, WallpaperManager.FLAG_SYSTEM)
+            wallpaperManager.setBitmap(scaledBitmap, null, false, WallpaperManager.FLAG_LOCK)
+        } catch (e: Exception) {
+            return@withContext false
+        }
+
+        try {
+            originalImageBitmap.recycle()
+            scaledBitmap.recycle()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        true
+    }
+}
+
 fun getScreenDimensions(context: Context): Pair<Int, Int> {
     val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
     val point = Point()

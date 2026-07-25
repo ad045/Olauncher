@@ -4,6 +4,7 @@ import android.app.admin.DevicePolicyManager
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.os.Process
@@ -14,10 +15,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsets
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.fragment.findNavController
 import app.olauncher.BuildConfig
 import app.olauncher.MainViewModel
@@ -37,10 +40,13 @@ import app.olauncher.helper.isTablet
 import app.olauncher.helper.openAppInfo
 import app.olauncher.helper.openUrl
 import app.olauncher.helper.rateApp
+import app.olauncher.helper.setDefaultWallpaper
 import app.olauncher.helper.setPlainWallpaper
+import app.olauncher.helper.setWallpaperFromUri
 import app.olauncher.helper.shareApp
 import app.olauncher.helper.showToast
 import app.olauncher.listener.DeviceAdmin
+import kotlinx.coroutines.launch
 
 class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickListener {
 
@@ -53,6 +59,10 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
     private val binding get() = _binding!!
     private val showPentastic = System.currentTimeMillis() % 2 == 0L
     private var showInstagram = false
+
+    private val pickWallpaperLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+        uri?.let { setCustomWallpaper(it) }
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         _binding = FragmentSettingsBinding.inflate(inflater, container, false)
@@ -123,6 +133,7 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
             R.id.homeAppsNum -> binding.appsNumSelectLayout.visibility = View.VISIBLE
             R.id.dailyWallpaperUrl -> requireContext().openUrl(prefs.dailyWallpaperUrl)
             R.id.dailyWallpaper -> toggleDailyWallpaperUpdate()
+            R.id.chooseWallpaper -> pickWallpaperLauncher.launch("image/*")
             R.id.alignment -> binding.alignmentSelectLayout.visibility = View.VISIBLE
             R.id.alignmentLeft -> viewModel.updateHomeAlignment(Gravity.START)
             R.id.alignmentCenter -> viewModel.updateHomeAlignment(Gravity.CENTER)
@@ -196,6 +207,7 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
             }
 
             R.id.dailyWallpaper -> removeWallpaper()
+            R.id.chooseWallpaper -> restoreDefaultWallpaper()
             R.id.appThemeText -> {
                 binding.appThemeSelectLayout.visibility = View.VISIBLE
                 binding.themeSystem.visibility = View.VISIBLE
@@ -223,6 +235,8 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
         binding.screenTimeOnOff.setOnClickListener(this)
         binding.dailyWallpaperUrl.setOnClickListener(this)
         binding.dailyWallpaper.setOnClickListener(this)
+        binding.chooseWallpaper.setOnClickListener(this)
+        binding.chooseWallpaper.setOnLongClickListener(this)
         binding.alignment.setOnClickListener(this)
         binding.alignmentLeft.setOnClickListener(this)
         binding.alignmentCenter.setOnClickListener(this)
@@ -462,6 +476,39 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
             viewModel.setWallpaperWorker()
             showWallpaperToasts()
         } else viewModel.cancelWallpaperWorker()
+    }
+
+    private fun setCustomWallpaper(uri: Uri) {
+        // A custom wallpaper replaces the daily wallpaper, so stop the worker
+        if (prefs.dailyWallpaper) {
+            prefs.dailyWallpaper = false
+            viewModel.cancelWallpaperWorker()
+            populateWallpaperText()
+        }
+        val appContext = requireContext().applicationContext
+        viewLifecycleOwner.lifecycleScope.launch {
+            val success = setWallpaperFromUri(appContext, uri)
+            if (success)
+                context?.showToast(R.string.your_wallpaper_will_update_shortly)
+            else
+                context?.showToast(R.string.failed_to_set_wallpaper)
+        }
+    }
+
+    private fun restoreDefaultWallpaper() {
+        if (prefs.dailyWallpaper) {
+            prefs.dailyWallpaper = false
+            viewModel.cancelWallpaperWorker()
+            populateWallpaperText()
+        }
+        val appContext = requireContext().applicationContext
+        viewLifecycleOwner.lifecycleScope.launch {
+            val success = setDefaultWallpaper(appContext)
+            if (success)
+                context?.showToast(R.string.your_wallpaper_will_update_shortly)
+            else
+                context?.showToast(R.string.failed_to_set_wallpaper)
+        }
     }
 
     private fun showWallpaperToasts() {
