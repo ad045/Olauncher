@@ -1,16 +1,15 @@
 ![Olauncher](olauncher_updated.png)
 
 
-# Olauncher | Minimal AF Launcher — International Edition
-AF stands for Ad-Free
+# Edited Olauncher | Minimal Add-Free Launcher, Now Including a Second Time Zone
 
-A fork of [Olauncher](https://github.com/tanujnotes/Olauncher) for people who
-live in one time zone and care about another one: the home screen shows a
-**second clock** with a small flag next to it, right below the main time. Plus a
+A fork of [Olauncher](https://github.com/tanujnotes/Olauncher) for **people who
+live in one time zone and care about another one**: the home screen shows a
+**second clock** with a small flag next to it, right below the main time. Plus this fork includes a
 custom wallpaper and a set of personal defaults. Everything else is upstream
 Olauncher.
 
-Both the time zone and the flag are meant to be changed — see the two how-tos
+Both the time zone and the flag are meant to be changed - see the two how-tos
 below.
 
 ## Second clock (Australia by default)
@@ -44,13 +43,13 @@ Any [IANA time zone ID](https://en.wikipedia.org/wiki/List_of_tz_database_time_z
 works (`Europe/Berlin`, `America/New_York`, `Asia/Tokyo`, …). Use the region ID
 rather than a fixed offset, so daylight saving is handled for you.
 
-### Use your own flag
+### Use your own icon flag
 The flag is just a vector drawable pulled in via `android:drawableEnd`, tinted
 to the text color with `android:drawableTint="?attr/primaryColor"` so it works
 in both light and dark mode.
 
 1. Get an SVG of the flag (`icons/flag_aus_transparent.svg` is the one used
-   here — outline only, since the drawable gets tinted to a single color).
+   here - outline only, since the drawable gets tinted to a single color).
 2. In Android Studio: right-click `res/drawable` → *New* → *Vector Asset* →
    *Local file*, pick the SVG, name it `ic_flag_xyz`. This writes
    `res/drawable/ic_flag_xyz.xml`.
@@ -60,7 +59,7 @@ in both light and dark mode.
 Keep the aspect ratio roughly 2:1 (`android:width="26dp"`,
 `android:height="13dp"` here) so the icon sits nicely next to the time. Drop
 the `drawableEnd`/`drawablePadding`/`drawableTint` lines if you want no flag at
-all — the time then stands on its own.
+all - the time then stands on its own.
 
 ## Custom wallpaper
 - Settings → *Choose wallpaper from gallery*: tap to pick any image; it is
@@ -91,15 +90,14 @@ ANDROID_HOME="$HOME/Library/Android/sdk" ./gradlew assembleDebug
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-There is no release build of this fork — build it yourself, or use upstream
-Olauncher below if you don't need the second clock.
+There is no release build of this fork - edit to your time zone and defaults and build it yourself.
 
 ##
 
 # Upstream Olauncher
 
 Everything from here on is the original project by
-[tanujnotes](https://github.com/tanujnotes/Olauncher) — the store links install
+[tanujnotes](https://github.com/tanujnotes/Olauncher) - the store links install
 the plain launcher, without the second clock.
 
 [<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
@@ -118,15 +116,3 @@ the plain launcher, without the second clock.
 ##
 
 License: [GNU GPLv3](https://www.gnu.org/licenses/gpl-3.0.en.html)
-
-Dev: [X/twitter](https://x.com/tanujnotes) • [Bluesky](https://bsky.app/profile/tanujnotes.bsky.social)
-
-##
-
-### My other apps:
-
-- [Pro Launcher](https://play.google.com/store/apps/details?id=app.prolauncher) - Pro version of Olauncher with extra features like widgets, weather, folders, etc.
-
-- [Note to Self](https://play.google.com/store/apps/details?id=com.makenotetoself) - Free and [open source](https://github.com/jeerovan/ntsapp) notes app with chat like interface and end-to-end encryption.
-
-- [Pentastic](https://play.google.com/store/apps/details?id=app.pentastic) - Minimal todo lists. Free and [open source](https://github.com/tanujnotes/Pentastic).
