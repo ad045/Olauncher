@@ -97,21 +97,8 @@ There is no release build of this fork - edit to your time zone and defaults and
 # Upstream Olauncher
 
 Everything from here on is the original project by
-[tanujnotes](https://github.com/tanujnotes/Olauncher) - the store links install
+[tanujnotes](https://github.com/tanujnotes/Olauncher) - check out the orginial project to find links to install
 the plain launcher, without the second clock.
-
-[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
-    alt="Get it on F-Droid"
-    height="80">](https://f-droid.org/packages/app.olauncher)
-[<img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png"
-    alt="Get it on Play Store"
-    height="80">](https://play.google.com/store/apps/details?id=app.olauncher)
-
-### Install using [F-Droid](https://f-droid.org/packages/app.olauncher), [Play Store](https://play.google.com/store/apps/details?id=app.olauncher) or the [latest APK](https://github.com/tanujnotes/Olauncher/releases/).
-
-- To maintain the simplicity of the launcher, a few niche features are available but hidden.
-
-- Please check out the **[About](https://tanujnotes.substack.com/p/olauncher-minimal-af-launcher?utm_source=github)** page in the Olauncher settings for a complete list of features and **FAQs**.
 
 ##
 
