@@ -1,16 +1,19 @@
 ![Olauncher](olauncher_updated.png)
 
 
-# Olauncher | Minimal AF Launcher
+# Olauncher | Minimal AF Launcher — International Edition
 AF stands for Ad-Free
 
-## Personal fork (Adrian)
+A fork of [Olauncher](https://github.com/tanujnotes/Olauncher) for people who
+live in one time zone and care about another one: the home screen shows a
+**second clock** with a small flag next to it, right below the main time. Plus a
+custom wallpaper and a set of personal defaults. Everything else is upstream
+Olauncher.
 
-This fork adds a few personal customizations on top of upstream Olauncher:
+Both the time zone and the flag are meant to be changed — see the two how-tos
+below.
 
-<img src="screenshot_example.png" alt="Home screen with second clock" height="500">
-
-### Second clock (Australia)
+## Second clock (Australia by default)
 The home screen shows a second, smaller clock below the main one, pinned to
 `Australia/Brisbane` (AEST, UTC+10, no daylight saving) and marked with a small
 Australian flag icon (`res/drawable/ic_flag_aus.xml`, tinted to match the text
@@ -19,7 +22,7 @@ color). Both clocks show a small AM/PM marker in 12-hour mode. Defined in
 Tapping it opens the clock app, same as the main clock, and it follows the
 same *date & time* visibility setting.
 
-#### Use your own time zone
+### Use your own time zone
 The second clock is a plain `TextClock` with `android:id="@+id/clock2"`, so a
 single attribute controls which zone it shows. Change `android:timeZone` in
 **both** layouts (portrait and landscape), otherwise the clock jumps back to
@@ -41,7 +44,7 @@ Any [IANA time zone ID](https://en.wikipedia.org/wiki/List_of_tz_database_time_z
 works (`Europe/Berlin`, `America/New_York`, `Asia/Tokyo`, …). Use the region ID
 rather than a fixed offset, so daylight saving is handled for you.
 
-#### Use your own flag
+### Use your own flag
 The flag is just a vector drawable pulled in via `android:drawableEnd`, tinted
 to the text color with `android:drawableTint="?attr/primaryColor"` so it works
 in both light and dark mode.
@@ -59,7 +62,7 @@ Keep the aspect ratio roughly 2:1 (`android:width="26dp"`,
 the `drawableEnd`/`drawablePadding`/`drawableTint` lines if you want no flag at
 all — the time then stands on its own.
 
-### Custom wallpaper
+## Custom wallpaper
 - Settings → *Choose wallpaper from gallery*: tap to pick any image; it is
   center-cropped and set as home + lock screen wallpaper.
 - Long-press the same entry to restore the default photo (diamond beach,
@@ -67,7 +70,7 @@ all — the time then stands on its own.
   automatically on first open.
 - Picking a custom or default wallpaper disables the daily-wallpaper worker.
 
-### Personal defaults (`data/PersonalDefaults.kt`)
+## Personal defaults (`data/PersonalDefaults.kt`)
 Applied once on first open (fresh install / after clearing app data):
 
 - **Home screen apps (5):** WhatsApp, Calendar, Maps, Mail (Gmail), Fitbit.
@@ -81,14 +84,23 @@ Applied once on first open (fresh install / after clearing app data):
 Edit `PersonalDefaults.kt` to change these; renames can still be adjusted at
 runtime via long-press in the app drawer as usual.
 
-### Building
+## Building
 ```bash
 JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home" \
 ANDROID_HOME="$HOME/Library/Android/sdk" ./gradlew assembleDebug
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
+There is no release build of this fork — build it yourself, or use upstream
+Olauncher below if you don't need the second clock.
+
 ##
+
+# Upstream Olauncher
+
+Everything from here on is the original project by
+[tanujnotes](https://github.com/tanujnotes/Olauncher) — the store links install
+the plain launcher, without the second clock.
 
 [<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
     alt="Get it on F-Droid"
