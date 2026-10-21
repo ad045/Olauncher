@@ -98,6 +98,76 @@ DeviceAdmin receiver already in the manifest.
 
 `X_how_tos.md` in the parent folder has the build, emulator and phone commands.
 
+## Turning it off again
+
+**Stuck on a grey screen with the app already gone?** Settings > Accessibility > Colour
+correction > off. No adb needed. Over adb instead:
+
+```bash
+adb shell settings put secure accessibility_display_daltonizer_enabled 0
+```
+
+That is the one thing here that outlives the app, and the rest of this section exists to keep
+you from getting into that state.
+
+### Without uninstalling anything
+
+| To stop | Do this |
+|---|---|
+| All blocking | Settings > Accessibility > Olauncher > off |
+| Grayscale | Long press the *Home Wi-Fi (grayscale)* row in Settings > Blocker |
+| One app's rule | Untick it in *Blocked apps* or *Time limited apps* |
+| A keyword | Clear it from *Blocked words in browser* |
+| A domain | Edit `BlockerConfig.blockedDomains` and rebuild - domains are not in Settings |
+
+The accessibility switch is the master off switch: the whole blocker runs from that service, so
+turning it off stops app blocking, domain blocking and keyword blocking at once, and leaves
+Olauncher working as an ordinary launcher. There is deliberately no separate "blocker off" row,
+because a switch you can flick in two taps while standing in front of the thing you are trying
+not to open is not a switch, it is a formality.
+
+**Grayscale is not covered by that switch.** It runs from the launcher's `onResume`, not from
+the accessibility service, so it has to be turned off on its own.
+
+### Removing the app
+
+Your existing Olauncher is not at risk. This build's application id is `app.olauncher.debug`
+(`applicationIdSuffix ".debug"`), so it installs *beside* `app.olauncher` rather than replacing
+it. Home apps, renames and every other setting live in the other app's data and are never
+touched. Switching back is a matter of pointing the home role at it.
+
+Do it in this order:
+
+1. **Turn grayscale off first** - long press *Home Wi-Fi (grayscale)*, or Settings >
+   Accessibility > Colour correction > off.
+2. Keep the log if you want it, because uninstalling deletes it:
+   ```bash
+   adb pull /sdcard/Android/data/app.olauncher.debug/files/excuses.tsv
+   ```
+3. Settings > Apps > Default apps > Home app > your previous launcher.
+4. Uninstall `app.olauncher.debug`.
+
+Step 1 is not optional housekeeping. The colour correction setting belongs to the system, not
+to this app: the app sets it, and uninstalling the app does not put it back. Uninstall while
+grayscale is on and the phone stays grey with nothing left on it that knows how to undo that.
+
+### What this app writes outside its own sandbox
+
+Exactly one thing: the system colour-correction mode, as two keys in `Settings.Secure`
+(`accessibility_display_daltonizer_enabled` and `accessibility_display_daltonizer`). It is the
+same setting as Settings > Accessibility > Colour correction, so turning grayscale on overwrites
+a correction mode set there by hand.
+
+Everything else - the app lists, the window, the keywords, the unlock counters, the excuse log -
+lives in the app's own storage and goes away with it. The `WRITE_SECURE_SETTINGS` grant goes
+away with a full uninstall too, and has to be re-granted over adb on the next install.
+
+### If you enabled uninstall protection
+
+Device admin has to be deactivated before Android will let the uninstall through: Settings >
+Security > Device admin apps > Olauncher > deactivate. That is the whole point of enabling it,
+but it is worth knowing which switch is holding the door shut before you need to know.
+
 ## Known ceilings
 
 - **Chrome view id.** Browser blocking reads `com.android.chrome:id/url_bar` out of the
