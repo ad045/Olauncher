@@ -85,6 +85,7 @@ object Constants {
 
     const val REQUEST_CODE_ENABLE_ADMIN = 666
     const val REQUEST_CODE_LAUNCHER_SELECTOR = 678
+    const val REQUEST_CODE_LOCATION = 679
 
     const val HINT_RATE_US = 15
 

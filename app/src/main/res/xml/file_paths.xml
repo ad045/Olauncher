@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- Only the excuses log is ever shared from here. -->
+    <external-files-path
+        name="excuses"
+        path="." />
+</paths>

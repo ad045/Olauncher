@@ -1,5 +1,6 @@
 package app.olauncher
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.BroadcastReceiver
@@ -24,6 +25,7 @@ import app.olauncher.data.Constants
 import app.olauncher.data.PersonalDefaults
 import app.olauncher.data.Prefs
 import app.olauncher.databinding.ActivityMainBinding
+import app.olauncher.helper.blocker.Grayscale
 import app.olauncher.helper.getColorFromAttr
 import app.olauncher.helper.hasBeenDays
 import app.olauncher.helper.hasBeenHours
@@ -111,6 +113,8 @@ class MainActivity : AppCompatActivity() {
         viewModel.getAppList()
         setupOrientation()
 
+        requestLocationForGrayscale()
+
         window.addFlags(FLAG_LAYOUT_NO_LIMITS)
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
@@ -137,6 +141,10 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         isResumed = true
         viewModel.isPrivateSpaceToggling = false
+
+        // The SSID is only readable while we are the foreground app, so this is the one
+        // reliable moment to decide whether we are at home. See Grayscale.
+        Grayscale.sync(this)
     }
 
     override fun onStop() {
@@ -167,6 +175,12 @@ class MainActivity : AppCompatActivity() {
             viewModel.setWallpaperWorker()
             recreate()
         }
+    }
+
+    private fun requestLocationForGrayscale() {
+        if (prefs.blockerHomeWifi.isEmpty()) return
+        if (Grayscale.hasLocationPermission(this)) return
+        requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), Constants.REQUEST_CODE_LOCATION)
     }
 
     private fun initClickListeners() {

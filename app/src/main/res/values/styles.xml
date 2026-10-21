@@ -90,5 +90,29 @@
     <style name="TextSmallLight" parent="TextSmall">
         <item name="android:textColor">@drawable/text_colors_light</item>
     </style>
+    <!-- The launcher theme is transparent and shows the wallpaper through it, which a
+         screen that has to cover Chrome cannot be. -->
+    <style name="BlockerTheme" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="android:windowShowWallpaper">false</item>
+        <item name="android:windowAnimationStyle">@style/WindowAnimationTransition</item>
+    </style>
+    <!-- The launcher theme is non-floating and draws the wallpaper, which makes an AlertDialog
+         built from it lay out full screen and stop responding to taps. The pickers in Settings
+         ask for this one instead. -->
+    <style name="BlockerDialog" parent="Theme.AppCompat.DayNight.Dialog.Alert">
+        <!-- AlertDialog.Builder(context, theme) overlays this style on the ACTIVITY's theme, so
+             every attribute not named here falls through to AppTheme. The launcher's window
+             attributes are deliberately strange - it draws under the system bars, behind the
+             wallpaper, into the display cutout - and a floating dialog that inherits them is laid
+             out against a frame that starts above the status bar while its touches are dispatched
+             against one that does not. The rows then answer taps aimed a row higher and the
+             buttons cannot be hit at all. Reset the lot. -->
+        <item name="android:windowTranslucentStatus">false</item>
+        <item name="android:windowTranslucentNavigation">false</item>
+        <item name="android:windowShowWallpaper">false</item>
+        <item name="android:windowFullscreen">false</item>
+        <item name="android:fitsSystemWindows">true</item>
+        <item name="android:windowLayoutInDisplayCutoutMode" tools:targetApi="o_mr1">default</item>
+    </style>
 
 </resources>

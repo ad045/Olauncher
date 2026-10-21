@@ -42,6 +42,20 @@ class Prefs(context: Context) {
     private val SCREEN_TIME_LAST_UPDATED = "SCREEN_TIME_LAST_UPDATED"
     private val LAUNCHER_RESTART_TIMESTAMP = "LAUNCHER_RECREATE_TIMESTAMP"
     private val SHOWN_ON_DAY_OF_YEAR = "SHOWN_ON_DAY_OF_YEAR"
+
+    private val BLOCKER_BLOCKED_APPS = "BLOCKER_BLOCKED_APPS"
+    private val BLOCKER_LIMITED_APPS = "BLOCKER_LIMITED_APPS"
+    private val BLOCKER_LIMIT_MINUTES = "BLOCKER_LIMIT_MINUTES"
+    private val BLOCKER_FROM_HOUR = "BLOCKER_FROM_HOUR"
+    private val BLOCKER_UNTIL_HOUR = "BLOCKER_UNTIL_HOUR"
+    private val BLOCKER_KEYWORDS = "BLOCKER_KEYWORDS"
+    private val BLOCKER_HOME_WIFI = "BLOCKER_HOME_WIFI"
+    private val BLOCKER_TELEPORT_PACKAGE = "BLOCKER_TELEPORT_PACKAGE"
+    private val BLOCKER_TELEPORT_NAME = "BLOCKER_TELEPORT_NAME"
+    private val BLOCKER_WINDOW_STARTED_AT = "BLOCKER_WINDOW_STARTED_AT"
+
+    /** Prefix for the per-key session state that is wiped at the start of every window. */
+    private val BLOCKER_SESSION = "BLOCKER_SESSION_"
     // Home button for recents feature disabled
     // private val HOME_BUTTON_SHOW_RECENTS = "HOME_BUTTON_SHOW_RECENTS"
 
@@ -532,6 +546,75 @@ class Prefs(context: Context) {
     var isShortcutSwipeRight: Boolean
         get() = prefs.getBoolean(IS_SHORTCUT_SWIPE_RIGHT, false)
         set(value) = prefs.edit { putBoolean(IS_SHORTCUT_SWIPE_RIGHT, value) }
+
+    var blockerBlockedApps: MutableSet<String>
+        get() = prefs.getStringSet(BLOCKER_BLOCKED_APPS, mutableSetOf())?.toMutableSet() ?: mutableSetOf()
+        set(value) = prefs.edit { putStringSet(BLOCKER_BLOCKED_APPS, value) }
+
+    var blockerLimitedApps: MutableSet<String>
+        get() = prefs.getStringSet(BLOCKER_LIMITED_APPS, mutableSetOf())?.toMutableSet() ?: mutableSetOf()
+        set(value) = prefs.edit { putStringSet(BLOCKER_LIMITED_APPS, value) }
+
+    var blockerLimitMinutes: Int
+        get() = prefs.getInt(BLOCKER_LIMIT_MINUTES, BlockerConfig.DEFAULT_LIMIT_MINUTES)
+        set(value) = prefs.edit { putInt(BLOCKER_LIMIT_MINUTES, value) }
+
+    var blockerFromHour: Int
+        get() = prefs.getInt(BLOCKER_FROM_HOUR, BlockerConfig.DEFAULT_FROM_HOUR)
+        set(value) = prefs.edit { putInt(BLOCKER_FROM_HOUR, value) }
+
+    var blockerUntilHour: Int
+        get() = prefs.getInt(BLOCKER_UNTIL_HOUR, BlockerConfig.DEFAULT_UNTIL_HOUR)
+        set(value) = prefs.edit { putInt(BLOCKER_UNTIL_HOUR, value) }
+
+    /**
+     * Words that block a browser page when they show up anywhere on it. Stored lowercase,
+     * because matching is case-insensitive and storing them twice over would be a trap.
+     */
+    var blockerKeywords: MutableSet<String>
+        get() = prefs.getStringSet(BLOCKER_KEYWORDS, mutableSetOf())?.toMutableSet() ?: mutableSetOf()
+        set(value) = prefs.edit { putStringSet(BLOCKER_KEYWORDS, value.map { it.trim().lowercase() }.filter { it.isNotEmpty() }.toSet()) }
+
+    /** SSID that counts as home for grayscale. Empty disables the feature. */
+    var blockerHomeWifi: String
+        get() = prefs.getString(BLOCKER_HOME_WIFI, "").toString()
+        set(value) = prefs.edit { putString(BLOCKER_HOME_WIFI, value) }
+
+    var blockerTeleportPackage: String
+        get() = prefs.getString(BLOCKER_TELEPORT_PACKAGE, "").toString()
+        set(value) = prefs.edit { putString(BLOCKER_TELEPORT_PACKAGE, value) }
+
+    var blockerTeleportName: String
+        get() = prefs.getString(BLOCKER_TELEPORT_NAME, "").toString()
+        set(value) = prefs.edit { putString(BLOCKER_TELEPORT_NAME, value) }
+
+    /** Window the session counters below belong to. A different value means they are stale. */
+    var blockerWindowStartedAt: Long
+        get() = prefs.getLong(BLOCKER_WINDOW_STARTED_AT, 0L)
+        set(value) = prefs.edit { putLong(BLOCKER_WINDOW_STARTED_AT, value) }
+
+    /** When the current allowance for [key] runs out. */
+    fun blockerUnlockedUntil(key: String): Long = prefs.getLong("${BLOCKER_SESSION}UNTIL_$key", 0L)
+
+    /** When the current allowance for [key] began, so time spent inside it can be measured. */
+    fun blockerUnlockedAt(key: String): Long = prefs.getLong("${BLOCKER_SESSION}AT_$key", 0L)
+
+    /** How many allowances [key] has been granted in this window. */
+    fun blockerUnlockCount(key: String): Int = prefs.getInt("${BLOCKER_SESSION}COUNT_$key", 0)
+
+    fun blockerGrantUnlock(key: String, fromMillis: Long, untilMillis: Long) {
+        prefs.edit {
+            putLong("${BLOCKER_SESSION}AT_$key", fromMillis)
+            putLong("${BLOCKER_SESSION}UNTIL_$key", untilMillis)
+            putInt("${BLOCKER_SESSION}COUNT_$key", blockerUnlockCount(key) + 1)
+        }
+    }
+
+    /** Called when a new window starts, so counters do not carry over from last night. */
+    fun blockerClearSession() {
+        val stale = prefs.all.keys.filter { it.startsWith(BLOCKER_SESSION) }
+        prefs.edit { stale.forEach { remove(it) } }
+    }
 
     fun getAppName(location: Int): String {
         return when (location) {

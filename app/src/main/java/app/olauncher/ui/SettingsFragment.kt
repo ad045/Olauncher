@@ -9,14 +9,18 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Process
 import android.provider.Settings
+import android.text.InputType
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.WindowInsets
+import android.widget.EditText
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.appcompat.app.AlertDialog
+import androidx.core.content.FileProvider
 import androidx.core.os.bundleOf
 import androidx.core.view.isVisible
 import androidx.lifecycle.ViewModelProvider
@@ -25,10 +29,17 @@ import androidx.navigation.fragment.findNavController
 import app.olauncher.BuildConfig
 import app.olauncher.MainViewModel
 import app.olauncher.R
+import app.olauncher.data.AppModel
+import app.olauncher.data.BlockerConfig
 import app.olauncher.data.Constants
 import app.olauncher.data.Prefs
 import app.olauncher.databinding.FragmentSettingsBinding
 import app.olauncher.helper.animateAlpha
+import app.olauncher.helper.blocker.ExcuseLog
+import app.olauncher.helper.blocker.Grayscale
+import app.olauncher.helper.copyToClipboard
+import app.olauncher.helper.dpToPx
+import app.olauncher.helper.getAppsList
 import app.olauncher.helper.appUsagePermissionGranted
 import app.olauncher.helper.getColorFromAttr
 import app.olauncher.helper.isAccessServiceEnabled
@@ -97,6 +108,7 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
         populateSwipeApps()
         populateSwipeDownAction()
         populateActionHints()
+        populateBlocker()
         showInstagram = requireContext().isCountryIn()
         if (showInstagram) binding.twitter.text = getString(R.string.instagram)
         initClickListeners()
@@ -154,6 +166,26 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
             R.id.notWorking -> requireContext().openUrl(Constants.URL_DOUBLE_TAP)
 
             R.id.tvGestures -> binding.flSwipeDown.visibility = View.VISIBLE
+
+            R.id.blockerBlockedApps -> pickApps(R.string.blocker_blocked_apps, prefs.blockerBlockedApps) {
+                prefs.blockerBlockedApps = it
+            }
+
+            R.id.blockerLimitedApps -> pickApps(R.string.blocker_limited_apps, prefs.blockerLimitedApps) {
+                prefs.blockerLimitedApps = it
+            }
+
+            R.id.blockerLimit -> pickFromList(
+                R.string.blocker_limit,
+                BlockerConfig.LIMIT_MINUTES_CHOICES.map { getString(R.string.blocker_n_minutes, it) }
+            ) { prefs.blockerLimitMinutes = BlockerConfig.LIMIT_MINUTES_CHOICES[it] }
+
+            R.id.blockerFrom -> pickHour(R.string.blocker_from) { prefs.blockerFromHour = it }
+            R.id.blockerUntil -> pickHour(R.string.blocker_until) { prefs.blockerUntilHour = it }
+            R.id.blockerHomeWifi -> setHomeWifiToCurrent()
+            R.id.blockerTeleportApp -> pickTeleportApp()
+            R.id.blockerKeywords -> editKeywords()
+            R.id.blockerExcuses -> shareExcuses()
 
             R.id.maxApps0 -> updateHomeAppsNum(0)
             R.id.maxApps1 -> updateHomeAppsNum(1)
@@ -216,6 +248,18 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
             R.id.swipeLeftApp -> toggleSwipeLeft()
             R.id.swipeRightApp -> toggleSwipeRight()
             R.id.toggleLock -> startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+
+            R.id.blockerHomeWifi -> {
+                prefs.blockerHomeWifi = ""
+                Grayscale.apply(requireContext(), false)
+                populateBlocker()
+                requireContext().showToast(getString(R.string.blocker_wifi_cleared))
+            }
+
+            R.id.blockerExcuses -> {
+                requireContext().copyToClipboard(ExcuseLog(requireContext()).file.absolutePath)
+                requireContext().showToast(getString(R.string.blocker_path_copied))
+            }
         }
         return true
     }
@@ -277,6 +321,18 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
         binding.maxApps6.setOnClickListener(this)
         binding.maxApps7.setOnClickListener(this)
         binding.maxApps8.setOnClickListener(this)
+
+        binding.blockerBlockedApps.setOnClickListener(this)
+        binding.blockerLimitedApps.setOnClickListener(this)
+        binding.blockerLimit.setOnClickListener(this)
+        binding.blockerFrom.setOnClickListener(this)
+        binding.blockerUntil.setOnClickListener(this)
+        binding.blockerHomeWifi.setOnClickListener(this)
+        binding.blockerHomeWifi.setOnLongClickListener(this)
+        binding.blockerTeleportApp.setOnClickListener(this)
+        binding.blockerKeywords.setOnClickListener(this)
+        binding.blockerExcuses.setOnClickListener(this)
+        binding.blockerExcuses.setOnLongClickListener(this)
 
         binding.textSizeMinus.setOnClickListener(this)
         binding.textSizePlus.setOnClickListener(this)
@@ -697,6 +753,158 @@ class SettingsFragment : BaseFragment(), View.OnClickListener, View.OnLongClickL
 //                && requireContext().isPackageInstalled(Constants.DIGITAL_WELLBEING_SAMSUNG_PACKAGE_NAME).not()
 //                && prefs.hideDigitalWellbeing.not()
 //    }
+
+    private fun populateBlocker() {
+        binding.blockerBlockedApps.text = appCountLabel(prefs.blockerBlockedApps.size)
+        binding.blockerLimitedApps.text = appCountLabel(prefs.blockerLimitedApps.size)
+        binding.blockerLimit.text = getString(R.string.blocker_n_minutes, prefs.blockerLimitMinutes)
+        binding.blockerFrom.text = getString(R.string.blocker_hour, prefs.blockerFromHour)
+        binding.blockerUntil.text = getString(R.string.blocker_hour, prefs.blockerUntilHour)
+        binding.blockerHomeWifi.text =
+            prefs.blockerHomeWifi.ifEmpty { getString(R.string.blocker_none) }
+        binding.blockerTeleportApp.text =
+            prefs.blockerTeleportName.ifEmpty { getString(R.string.blocker_none) }
+
+        val keywords = prefs.blockerKeywords.size
+        binding.blockerKeywords.text =
+            if (keywords == 0) getString(R.string.blocker_none)
+            else resources.getQuantityString(R.plurals.blocker_n_keywords, keywords, keywords)
+
+        val excuses = ExcuseLog(requireContext()).file
+        // Minus the header row, which is only there once the file exists.
+        val entries = if (excuses.exists()) (excuses.readLines().size - 1).coerceAtLeast(0) else 0
+        binding.blockerExcuses.text =
+            if (entries == 0) getString(R.string.blocker_none) else resources.getQuantityString(R.plurals.blocker_n_excuses, entries, entries)
+    }
+
+    private fun appCountLabel(count: Int): String =
+        if (count == 0) getString(R.string.blocker_none) else resources.getQuantityString(R.plurals.blocker_n_apps, count, count)
+
+    /**
+     * Every launchable app, ticked where it is already in [selected]. Hidden apps are included
+     * on purpose - hiding an app from the drawer is not a reason to stop blocking it.
+     */
+    private fun pickApps(titleRes: Int, selected: Set<String>, onPicked: (MutableSet<String>) -> Unit) {
+        lifecycleScope.launch {
+            val apps = installedApps()
+            if (apps.isEmpty()) return@launch
+            val checked = apps.map { selected.contains(it.appPackage) }.toBooleanArray()
+            AlertDialog.Builder(requireContext(), R.style.BlockerDialog)
+                .setTitle(titleRes)
+                .setMultiChoiceItems(apps.map { it.appLabel }.toTypedArray(), checked) { _, which, isChecked ->
+                    checked[which] = isChecked
+                }
+                .setPositiveButton(R.string.okay) { _, _ ->
+                    onPicked(apps.filterIndexed { i, _ -> checked[i] }.map { it.appPackage }.toMutableSet())
+                    populateBlocker()
+                }
+                .setNegativeButton(R.string.close, null)
+                .show()
+        }
+    }
+
+    /**
+     * The whole keyword list as one comma-separated line.
+     *
+     * A list with add and remove buttons would be more app-like and worse: the list is short, it
+     * changes rarely, and editing a line of text beats hunting for a delete button next to the
+     * word you meant.
+     */
+    private fun editKeywords() {
+        val input = EditText(requireContext()).apply {
+            setText(prefs.blockerKeywords.sorted().joinToString(", "))
+            setHint(R.string.blocker_keywords_hint)
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS
+            setSingleLine()
+            val pad = 24.dpToPx()
+            setPadding(pad, pad, pad, pad)
+        }
+        AlertDialog.Builder(requireContext(), R.style.BlockerDialog)
+            .setTitle(R.string.blocker_keywords)
+            .setMessage(R.string.blocker_keywords_help)
+            .setView(input)
+            .setPositiveButton(R.string.okay) { _, _ ->
+                prefs.blockerKeywords = input.text.toString()
+                    .split(',')
+                    .map { it.trim() }
+                    .filter { it.isNotEmpty() }
+                    .toMutableSet()
+                populateBlocker()
+            }
+            .setNegativeButton(R.string.close, null)
+            .show()
+    }
+
+    private fun pickTeleportApp() {
+        lifecycleScope.launch {
+            val apps = installedApps()
+            if (apps.isEmpty()) return@launch
+            AlertDialog.Builder(requireContext(), R.style.BlockerDialog)
+                .setTitle(R.string.blocker_pick_teleport)
+                .setItems(apps.map { it.appLabel }.toTypedArray()) { _, which ->
+                    prefs.blockerTeleportPackage = apps[which].appPackage
+                    prefs.blockerTeleportName = apps[which].appLabel
+                    populateBlocker()
+                }
+                .setNegativeButton(R.string.close, null)
+                .show()
+        }
+    }
+
+    private suspend fun installedApps(): List<AppModel.App> =
+        getAppsList(requireContext(), prefs, includeHiddenApps = true)
+            .filterIsInstance<AppModel.App>()
+            .distinctBy { it.appPackage }
+
+    private fun pickHour(titleRes: Int, onPicked: (Int) -> Unit) {
+        pickFromList(titleRes, (0..23).map { getString(R.string.blocker_hour, it) }) { onPicked(it) }
+    }
+
+    private fun pickFromList(titleRes: Int, labels: List<String>, onPicked: (Int) -> Unit) {
+        AlertDialog.Builder(requireContext(), R.style.BlockerDialog)
+            .setTitle(titleRes)
+            .setItems(labels.toTypedArray()) { _, which ->
+                onPicked(which)
+                populateBlocker()
+            }
+            .setNegativeButton(R.string.close, null)
+            .show()
+    }
+
+    /**
+     * Typing an SSID on a phone keyboard is worse than tapping while connected to it, so the
+     * row just takes whatever network is up. Long press clears it.
+     */
+    private fun setHomeWifiToCurrent() {
+        if (Grayscale.hasLocationPermission(requireContext()).not()) {
+            startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).setData(Uri.parse("package:" + BuildConfig.APPLICATION_ID)))
+            return
+        }
+        val ssid = Grayscale.currentSsid(requireContext())
+        if (ssid == null) {
+            requireContext().showToast(getString(R.string.blocker_wifi_unavailable))
+            return
+        }
+        prefs.blockerHomeWifi = ssid
+        Grayscale.sync(requireContext())
+        populateBlocker()
+        requireContext().showToast(getString(R.string.blocker_wifi_set, ssid))
+    }
+
+    private fun shareExcuses() {
+        val file = ExcuseLog(requireContext()).file
+        if (file.exists().not()) {
+            requireContext().showToast(getString(R.string.blocker_no_excuses_yet))
+            return
+        }
+        val uri = FileProvider.getUriForFile(requireContext(), BuildConfig.APPLICATION_ID + ".fileprovider", file)
+        val send = Intent(Intent.ACTION_SEND)
+            .setType("text/tab-separated-values")
+            .putExtra(Intent.EXTRA_STREAM, uri)
+            .putExtra(Intent.EXTRA_SUBJECT, getString(R.string.blocker_share_excuses))
+            .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        startActivity(Intent.createChooser(send, getString(R.string.blocker_share_excuses)))
+    }
 
     private fun showAppListIfEnabled(flag: Int) {
         if ((flag == Constants.FLAG_SET_SWIPE_LEFT_APP) and !prefs.swipeLeftEnabled) {

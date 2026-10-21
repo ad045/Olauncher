@@ -97,7 +97,7 @@
         \n\nIt\'s also the best way to support the developers of Olauncher. Check it out!</string>
     <string name="wallpaper_message">Olauncher offers beautiful new wallpapers daily. Give your homescreen a fresh new look every day, for free!
         \n\nWant to try it?</string>
-    <string name="accessibility_service_description">The accessibility permission is required to enable the gesture - double tap to lock . Any data acquired by Olauncher via this service will not leave your device.</string>
+    <string name="accessibility_service_description">The accessibility permission is required for the double tap to lock gesture, and to block distracting sites and apps during the evening. Any data acquired by Olauncher via this service will not leave your device.</string>
     <string name="support_olauncher_for_free">Support Olauncher for free by using our Amazon affiliate link.</string>
     <string name="support_olauncher_message">Every time you buy something using our link, we get a small commission. Please save the link and use it whenever you shop online.\nThank you!</string>
     <string name="open">Open link</string>
@@ -169,4 +169,68 @@
     <string name="cheers">Cheers!</string>
     <string name="notification_bar">Notification bar</string>
     <string name="private_space">Private space</string>
+    <!-- Blocker -->
+    <string name="reflect_title">Do you really want to open this?</string>
+    <string name="reflect_body">Do you like the reason why you want to open this? Reflect again.</string>
+    <string name="reflect_question">Why did you want to open it?</string>
+    <string name="reflect_reason_hint">Write your reason…</string>
+    <string name="reflect_open">Open for %1$d minutes</string>
+    <string name="reflect_wait">Wait %1$d s…</string>
+    <string name="reflect_write_more">Write a bit more…</string>
+    <string name="reflect_over_title">Those %1$d minutes are over.</string>
+    <string name="reflect_over_body">This is the %1$s time you are standing here in front of %2$s tonight.</string>
+    <string name="reflect_over_question">Were those minutes well spent?</string>
+    <string name="reflect_continue">Keep hanging around, %1$d more minutes</string>
+    <string name="reflect_teleport">Teleport me to %1$s</string>
+    <string name="reflect_teleport_failed">That app would not open</string>
+    <string name="reflect_stop">Stop, switch the phone off</string>
+    <string name="reflect_ordinal_nth">%1$d.</string>
+    <string-array name="reflect_ordinals">
+        <item>first</item>
+        <item>second</item>
+        <item>third</item>
+        <item>fourth</item>
+        <item>fifth</item>
+        <item>sixth</item>
+        <item>seventh</item>
+        <item>eighth</item>
+    </string-array>
+
+    <!-- Blocker settings -->
+    <string name="blocker">Blocker</string>
+    <string name="blocker_blocked_apps">Blocked apps</string>
+    <string name="blocker_limited_apps">Time limited apps</string>
+    <string name="blocker_limit">Time limit</string>
+    <string name="blocker_from">Blocking starts</string>
+    <string name="blocker_until">Blocking ends</string>
+    <string name="blocker_home_wifi">Home Wi-Fi (grayscale)</string>
+    <string name="blocker_teleport_app">Teleport app</string>
+    <string name="blocker_keywords">Blocked words in browser</string>
+    <string name="blocker_keywords_hint">instagram, tiktok, news</string>
+    <string name="blocker_keywords_help">Blocks any page in a watched browser that shows one of these words. Separate them with commas.</string>
+    <string name="blocker_excuses">Excuses file</string>
+    <string name="blocker_none">none</string>
+    <plurals name="blocker_n_keywords">
+        <item quantity="one">%1$d word</item>
+        <item quantity="other">%1$d words</item>
+    </plurals>
+    <plurals name="blocker_n_apps">
+        <item quantity="one">%1$d app</item>
+        <item quantity="other">%1$d apps</item>
+    </plurals>
+    <plurals name="blocker_n_excuses">
+        <item quantity="one">%1$d entry</item>
+        <item quantity="other">%1$d entries</item>
+    </plurals>
+    <string name="blocker_n_minutes">%1$d min</string>
+    <string name="blocker_hour">%1$02d:00</string>
+    <string name="blocker_pick_apps">Pick apps</string>
+    <string name="blocker_pick_teleport">Where should the teleport take you?</string>
+    <string name="blocker_wifi_set">Home Wi-Fi set to %1$s</string>
+    <string name="blocker_wifi_cleared">Home Wi-Fi cleared, grayscale off</string>
+    <string name="blocker_wifi_unavailable">Connect to your home Wi-Fi first, then tap again</string>
+    <string name="blocker_wifi_long_press">Long press to clear</string>
+    <string name="blocker_no_excuses_yet">No excuses written yet</string>
+    <string name="blocker_share_excuses">Excuses</string>
+    <string name="blocker_path_copied">Path copied</string>
 </resources>

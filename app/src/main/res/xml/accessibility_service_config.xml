@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- No packageNames filter: which apps are blocked is picked in Settings, so the service
+     has to see events from every package. Blocker.isWatched does the filtering instead, and
+     notificationTimeout coalesces the content-changed flood that browsers produce. -->
 <accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
-    android:accessibilityEventTypes="typeViewClicked"
+    android:accessibilityEventTypes="typeViewClicked|typeWindowStateChanged|typeWindowContentChanged"
     android:accessibilityFeedbackType="feedbackVisual"
     android:accessibilityFlags="flagDefault"
     android:canRetrieveWindowContent="true"
     android:description="@string/accessibility_service_description"
-    android:notificationTimeout="10"
-    android:packageNames="app.olauncher.debug, app.olauncher"
+    android:notificationTimeout="100"
     android:settingsActivity="com.example.android.accessibility.ServiceSettingsActivity" />
