@@ -4,6 +4,9 @@
 
 Now includes blocking of websites; a gray-scale whenever smartphone is in home-wifi, etc. 
 
+To start it for the first time: Install it, make sure Olauncher is selected as settings->default_apps->launcher, and then go to the settings of Olauncher (press long on screen) and choose the home wifi. 
+
+
 # Edited Olauncher | Minimal Add-Free Launcher, Now Including a Second Time Zone
 
 A fork of [Olauncher](https://github.com/tanujnotes/Olauncher) for **people who
