@@ -1,5 +1,8 @@
 ![Olauncher](olauncher_updated.png)
 
+# EDIT: 
+
+Now includes blocking of websites; a gray-scale whenever smartphone is in home-wifi, etc. 
 
 # Edited Olauncher | Minimal Add-Free Launcher, Now Including a Second Time Zone
 
